@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f172a">
+  <title>UBER  Sistema de movilidad</title>
+
+  <!-- Fuentes e Iconos -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="css/app.css">
+
+  <!-- Estilos embebidos de respaldo para garantizar la vista centrar moderna -->
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --primary: #10b981;
+      --primary-hover: #059669;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --input-bg: rgba(15, 23, 42, 0.6);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+    }
+
+    /* Layout Centrado Moderno */
+    .auth-centered-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+      background: radial-gradient(circle at 50% 20%, #1e293b 0%, #0f172a 100%);
+    }
+
+    .auth-modern-card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 36px 32px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .brand-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .brand-header .brand-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--primary);
+      border-radius: 12px;
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .brand-header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-header p {
+      margin: 6px 0 0;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    /* Selectores de Pestañas (Login / Registro) */
+    .auth-tab-nav {
+      display: flex;
+      background: rgba(15, 23, 42, 0.5);
+      padding: 4px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      border: 1px solid var(--card-border);
+    }
+
+    .auth-tab-nav button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .auth-tab-nav button.active {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    /* Formularios */
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .stack label {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .stack input, .stack select {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      color: #ffffff;
+      font-size: 14px;
+      box-sizing: border-box;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .stack input:focus, .stack select:focus {
+      border-color: var(--primary);
+    }
+
+    .btn-action {
+      margin-top: 8px;
+      padding: 14px;
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-action:hover {
+      background: var(--primary-hover);
+    }
+
+    .two-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .segmented {
+      display: flex;
+      gap: 8px;
+      background: var(--input-bg);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+    }
+
+    .segmented label {
+      flex: 1;
+      text-align: center;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .segmented input {
+      display: none;
+    }
+
+    .segmented span {
+      display: block;
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+
+    .segmented input:checked + span {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    .auth-footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Notificaciones de estado -->
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="api-status" role="status" aria-live="polite" hidden></div>
+
+  <!-- SECCIÓN DE AUTENTICACIÓN CENTRADA -->
+  <div id="auth-shell" class="auth-centered-container">
+    <div class="auth-modern-card">
+      
+      <!-- Logo y Título -->
+      <div class="brand-header">
+        <div class="brand-icon">↗</div>
+        <h1>UBER<span style="color: var(--primary);">.</span></h1>
+        <p>Sistema de Movilidad</p>
+      </div>
+
+      <!-- Navegación por pestañas -->
+      <div class="auth-tab-nav">
+        <button id="btn-tab-login" class="active" type="button" onclick="switchTab('login')">Iniciar sesión</button>
+        <button id="btn-tab-register" type="button" onclick="switchTab('register')">Registrarse</button>
+      </div>
+
+      <!-- Formularios -->
+      <div class="auth-card-body">
+        
+        <!-- Formulario Iniciar Sesión -->
+        <div id="auth-login">
+          <form id="login-form" class="stack">
+            <label for="login-input">
+              Correo o teléfono
+              <input id="login-input" name="login" type="text" autocomplete="username" required placeholder="tu@correo.com">
+            </label>
+
+            <label for="password-input">
+              Contraseña
+              <input id="password-input" name="password" type="password" autocomplete="current-password" required placeholder="••••••••">
+            </label>
+
+            <button class="btn-action" type="submit">Entrar a UBER </button>
+          </form>
+        </div>
+
+        <!-- Formulario Registro -->
+        <div id="auth-register" hidden>
+          <form id="register-form" class="stack">
+            <div class="segmented">
+              <label><input type="radio" name="role" value="client" checked><span>Pasajero</span></label>
+              <label><input type="radio" name="role" value="driver"><span>Conductor</span></label>
+            </div>
+
+            <label for="reg-name">
+              Nombre completo
+              <input id="reg-name" name="name" type="text" autocomplete="name" required placeholder="Tu nombre">
+            </label>
+
+            <div class="two-cols">
+              <label for="reg-email">
+                Correo
+                <input id="reg-email" name="email" type="email" required placeholder="correo@ejemplo.com">
+              </label>
+              <label for="reg-phone">
+                Teléfono
+                <input id="reg-phone" name="phone" type="tel" required placeholder="3101234567">
+              </label>
+            </div>
+
+            <label for="reg-password">
+              Contraseña (mín. 8)
+              <input id="reg-password" name="password" type="password" required minlength="8" placeholder="••••••••">
+            </label>
+
+            <!-- Datos adicionales conductor -->
+            <div id="driver-register-fields" class="stack" style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px;" hidden>
+              <label for="driver-license">Licencia<input id="driver-license" name="license_number"></label>
+              <div class="two-cols">
+                <label for="driver-plate">Placa<input id="driver-plate" name="plate"></label>
+                <label for="driver-brand">Marca<input id="driver-brand" name="brand"></label>
+              </div>
+              <div class="two-cols">
+                <label for="driver-model">Modelo<input id="driver-model" name="model"></label>
+                <label for="driver-year">Año<input id="driver-year" name="year" type="number"></label>
+              </div>
+            </div>
+
+            <button class="btn-action" type="submit">Crear cuenta</button>
+          </form>
+        </div>
+
+      </div>
+
+      
+        
+      
+    </div>
+  </div>
+
+  <!-- APLICACIÓN PRINCIPAL (PANEL) -->
+  <div id="app-shell" hidden>
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-icon">↗</span><span>RUTA.</span></div>
+      <nav id="side-nav" class="side-nav"></nav>
+      <button id="logout-btn" class="logout" type="button">Cerrar sesión</button>
+    </aside>
+
+    <div class="app-content">
+      <header class="topbar">
+        <div class="breadcrumbs">Plataforma / <span id="top-role">Panel</span></div>
+        <div class="topbar-right">
+          <span id="top-user">Usuario</span>
+          <span id="avatar" class="avatar">R</span>
+        </div>
+      </header>
+
+      <main>
+        <h1 id="page-title">Tu panel</h1>
+        <p id="page-subtitle" class="muted"></p>
+        
+        <div id="panel-client" hidden></div>
+        <div id="panel-driver" hidden></div>
+        <div id="panel-admin" hidden></div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Script para alternar pestañas visualmente y cargar JS -->
+  <script>
+    function switchTab(view) {
+      const loginTab = document.getElementById('auth-login');
+      const registerTab = document.getElementById('auth-register');
+      const btnLogin = document.getElementById('btn-tab-login');
+      const btnRegister = document.getElementById('btn-tab-register');
+
+      if (view === 'login') {
+        loginTab.hidden = false;
+        registerTab.hidden = true;
+        btnLogin.classList.add('active');
+        btnRegister.classList.remove('active');
+      } else {
+        loginTab.hidden = true;
+        registerTab.hidden = false;
+        btnLogin.classList.remove('active');
+        btnRegister.classList.add('active');
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="js/app.js" defer></script>
+</body>
+</html>
